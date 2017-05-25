@@ -1,6 +1,7 @@
 package fr.rolandl.carousel;
 
 import android.content.Context;
+import android.database.DataSetObserver;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -17,15 +18,29 @@ import java.util.List;
 public abstract class CarouselAdapter<T>
         extends BaseAdapter {
 
+    private final List<T> modelItems = new ArrayList<>();
     private final List<CarouselItem<T>> items = new ArrayList<>();
 
     public CarouselAdapter(Context context, List<T> items) {
+        modelItems.addAll(items);
         for (int i = 0; i < items.size(); i++) {
             final CarouselItem<T> item = getCarouselItem(context);
             item.setIndex(i);
             item.update(items.get(i));
             this.items.add(item);
         }
+
+        registerDataSetObserver(new DataSetObserver() {
+            @Override
+            public void onChanged() {
+                update();
+            }
+
+            @Override
+            public void onInvalidated() {
+                update();
+            }
+        });
     }
 
     @Override
@@ -53,5 +68,11 @@ public abstract class CarouselAdapter<T>
     }
 
     public abstract CarouselItem<T> getCarouselItem(Context context);
+
+    private void update() {
+        for (int i = 0; i < items.size(); i++) {
+            items.get(i).update(modelItems.get(i));
+        }
+    }
 
 }
