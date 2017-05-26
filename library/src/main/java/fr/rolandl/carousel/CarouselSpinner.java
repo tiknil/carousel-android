@@ -24,113 +24,34 @@ import java.util.Collections;
 public abstract class CarouselSpinner
         extends CarouselBaseAdapter<SpinnerAdapter> {
 
-    private static class SavedState
-            extends BaseSavedState {
+    //region Inner enums
+    //endregion
 
-        public static final Parcelable.Creator<SavedState> CREATOR = new Parcelable.Creator<SavedState>() {
-            @Override
-            public SavedState createFromParcel(Parcel in) {
-                return new SavedState(in);
-            }
 
-            @Override
-            public SavedState[] newArray(int size) {
-                return new SavedState[size];
-            }
+    //region Constants
+    //endregion
 
-        };
 
-        private long selectedId;
-
-        private int position;
-
-        /**
-         * Constructor called from {@link AbsSpinner#onSaveInstanceState()}
-         */
-        SavedState(Parcelable superState) {
-            super(superState);
-        }
-
-        /**
-         * Constructor called from {@link #CREATOR}
-         */
-        private SavedState(Parcel in) {
-            super(in);
-            selectedId = in.readLong();
-            position = in.readInt();
-        }
-
-        @Override
-        public void writeToParcel(Parcel out, int flags) {
-            super.writeToParcel(out, flags);
-            out.writeLong(selectedId);
-            out.writeInt(position);
-        }
-
-        @Override
-        public String toString() {
-            return "AbsSpinner.SavedState{" + Integer.toHexString(System.identityHashCode(this)) + " selectedId=" + selectedId + " position=" + position + "}";
-        }
-
-    }
-
-    protected class RecycleBin {
-
-        private final SparseArray<View> scrapHeap = new SparseArray<>();
-
-        public void put(int position, View v) {
-            scrapHeap.put(position, v);
-        }
-
-        public View get(int position) {
-            final View result = scrapHeap.get(position);
-
-            if (result != null) {
-                scrapHeap.delete(position);
-            }
-
-            return result;
-        }
-
-        public void clear() {
-            final SparseArray<View> scrapHeap = this.scrapHeap;
-            final int count = scrapHeap.size();
-
-            for (int i = 0; i < count; i++) {
-                final View view = scrapHeap.valueAt(i);
-
-                if (view != null) {
-                    removeDetachedView(view, true);
-                }
-            }
-
-            scrapHeap.clear();
-        }
-
-    }
-
+    //region Instance Fields
     protected SpinnerAdapter adapter;
-
     private int heightMeasureSpec;
-
     private int widthMeasureSpec;
-
     private boolean blockLayoutRequests;
-
     private int selectionLeftPadding = 0;
-
     private int selectionTopPadding = 0;
-
     private int selectionRightPadding = 0;
-
     private int selectionBottomPadding = 0;
-
     private DataSetObserver dataSetObserver;
-
     protected final Rect spinnerPadding = new Rect();
-
     protected final RecycleBin recycler = new RecycleBin();
+    //endregion
 
+
+    //region Class methods
+    //endregion
+
+
+    //region Constructors / Lifecycle
     public CarouselSpinner(Context context) {
         super(context);
         initCarouselSpinner();
@@ -144,76 +65,14 @@ public abstract class CarouselSpinner
         super(context, attrs, defStyle);
         initCarouselSpinner();
     }
+    //endregion
 
-    /**
-     * Common code for different constructor flavors
-     */
-    private void initCarouselSpinner() {
-        setFocusable(true);
-        setWillNotDraw(false);
-    }
 
-    /**
-     * Jump directly to a specific item in the adapter data.
-     */
-    public void setSelection(int position, boolean animate) {
-        // Animate only if requested position is already on screen somewhere
-        //boolean shouldAnimate = animate && firstPosition <= position && position <= firstPosition + getChildCount() - 1;
-        setSelectionInt(position, animate);
-    }
+    //region Custom accessors
+    //endregion
 
-    /**
-     * Makes the item at the supplied position selected.
-     *
-     * @param position Position to select
-     * @param animate  Should the transition be animated
-     */
-    private void setSelectionInt(int position, boolean animate) {
-        if (position != oldSelectedPosition) {
-            blockLayoutRequests = true;
-            final int delta = position - selectedPosition;
-            setNextSelectedPositionInt(position);
-            layout(delta, animate);
-            blockLayoutRequests = false;
-        }
-    }
 
-    /**
-     * Clear out all children from the list
-     */
-    void resetList() {
-        dataChanged = false;
-        needSync = false;
-
-        removeAllViewsInLayout();
-        oldSelectedPosition = CarouselBaseAdapter.INVALID_POSITION;
-        oldSelectedRowId = CarouselBaseAdapter.INVALID_ROW_ID;
-
-        setSelectedPositionInt(CarouselBaseAdapter.INVALID_POSITION);
-        setNextSelectedPositionInt(CarouselBaseAdapter.INVALID_POSITION);
-        invalidate();
-    }
-
-    private int getChildHeight(View child) {
-        return child.getMeasuredHeight();
-    }
-
-    private int getChildWidth(View child) {
-        return child.getMeasuredWidth();
-    }
-
-    protected void recycleAllViews() {
-        final int childCount = getChildCount();
-        final CarouselSpinner.RecycleBin recycleBin = recycler;
-        final int position = firstPosition;
-
-        // All views go in recycler
-        for (int i = 0; i < childCount; i++) {
-            View v = getChildAt(i);
-            int index = position + i;
-            recycleBin.put(index, v);
-        }
-    }
+    //region Public
 
     /**
      * Maps a point to a position in the list.
@@ -265,6 +124,87 @@ public abstract class CarouselSpinner
         }
     }
 
+    /**
+     * Jump directly to a specific item in the adapter data.
+     */
+    public void setSelection(int position, boolean animate) {
+        // Animate only if requested position is already on screen somewhere
+        //boolean shouldAnimate = animate && firstPosition <= position && position <= firstPosition + getChildCount() - 1;
+        setSelectionInt(position, animate);
+    }
+    //endregion
+
+    //region Protected, without modifier
+    protected abstract void layout(int delta, boolean animate);
+
+    protected void recycleAllViews() {
+        final int childCount = getChildCount();
+        final CarouselSpinner.RecycleBin recycleBin = recycler;
+        final int position = firstPosition;
+
+        // All views go in recycler
+        for (int i = 0; i < childCount; i++) {
+            View v = getChildAt(i);
+            int index = position + i;
+            recycleBin.put(index, v);
+        }
+    }
+
+    /**
+     * Clear out all children from the list
+     */
+    void resetList() {
+        dataChanged = false;
+        needSync = false;
+
+        removeAllViewsInLayout();
+        oldSelectedPosition = CarouselBaseAdapter.INVALID_POSITION;
+        oldSelectedRowId = CarouselBaseAdapter.INVALID_ROW_ID;
+
+        setSelectedPositionInt(CarouselBaseAdapter.INVALID_POSITION);
+        setNextSelectedPositionInt(CarouselBaseAdapter.INVALID_POSITION);
+        invalidate();
+    }
+    //endregion
+
+    //region Private
+
+    /**
+     * Common code for different constructor flavors
+     */
+    private void initCarouselSpinner() {
+        setFocusable(true);
+        setWillNotDraw(false);
+    }
+
+    /**
+     * Makes the item at the supplied position selected.
+     *
+     * @param position Position to select
+     * @param animate  Should the transition be animated
+     */
+    private void setSelectionInt(int position, boolean animate) {
+        if (position != oldSelectedPosition) {
+            blockLayoutRequests = true;
+            final int delta = position - selectedPosition;
+            setNextSelectedPositionInt(position);
+            layout(delta, animate);
+            blockLayoutRequests = false;
+        }
+    }
+
+
+    private int getChildHeight(View child) {
+        return child.getMeasuredHeight();
+    }
+
+    private int getChildWidth(View child) {
+        return child.getMeasuredWidth();
+    }
+    //endregion
+
+
+    //region Override methods and callbacks
     @Override
     public Parcelable onSaveInstanceState() {
         final Parcelable superState = super.onSaveInstanceState();
@@ -451,7 +391,92 @@ public abstract class CarouselSpinner
     public int getCount() {
         return itemCount;
     }
+    //endregion
 
-    protected abstract void layout(int delta, boolean animate);
+    //region Inner classes or interfaces
+    private static class SavedState
+            extends BaseSavedState {
 
+        public static final Parcelable.Creator<SavedState> CREATOR = new Parcelable.Creator<SavedState>() {
+            @Override
+            public SavedState createFromParcel(Parcel in) {
+                return new SavedState(in);
+            }
+
+            @Override
+            public SavedState[] newArray(int size) {
+                return new SavedState[size];
+            }
+
+        };
+
+        private long selectedId;
+
+        private int position;
+
+        /**
+         * Constructor called from {@link AbsSpinner#onSaveInstanceState()}
+         */
+        SavedState(Parcelable superState) {
+            super(superState);
+        }
+
+        /**
+         * Constructor called from {@link #CREATOR}
+         */
+        private SavedState(Parcel in) {
+            super(in);
+            selectedId = in.readLong();
+            position = in.readInt();
+        }
+
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            super.writeToParcel(out, flags);
+            out.writeLong(selectedId);
+            out.writeInt(position);
+        }
+
+        @Override
+        public String toString() {
+            return "AbsSpinner.SavedState{" + Integer.toHexString(System.identityHashCode(this)) + " selectedId=" + selectedId + " position=" + position + "}";
+        }
+
+    }
+
+    protected class RecycleBin {
+
+        private final SparseArray<View> scrapHeap = new SparseArray<>();
+
+        public void put(int position, View v) {
+            scrapHeap.put(position, v);
+        }
+
+        public View get(int position) {
+            final View result = scrapHeap.get(position);
+
+            if (result != null) {
+                scrapHeap.delete(position);
+            }
+
+            return result;
+        }
+
+        public void clear() {
+            final SparseArray<View> scrapHeap = this.scrapHeap;
+            final int count = scrapHeap.size();
+
+            for (int i = 0; i < count; i++) {
+                final View view = scrapHeap.valueAt(i);
+
+                if (view != null) {
+                    removeDetachedView(view, true);
+                }
+            }
+
+            scrapHeap.clear();
+        }
+
+    }
+    //endregion
 }

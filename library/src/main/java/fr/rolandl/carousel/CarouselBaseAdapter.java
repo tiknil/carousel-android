@@ -25,175 +25,11 @@ import android.widget.ListView;
 public abstract class CarouselBaseAdapter<T extends Adapter>
         extends ViewGroup {
 
-    /**
-     * Extra menu information provided to the
-     * {@link android.view.View.OnCreateContextMenuListener#onCreateContextMenu(ContextMenu, View, ContextMenuInfo) } callback when a context menu is
-     * brought up for this CarouselAdapter.
-     */
-    protected static class AdapterContextMenuInfo
-            implements ContextMenu.ContextMenuInfo {
+    //region Inner enums
+    //endregion
 
-        public AdapterContextMenuInfo(View targetView, int position, long id) {
-            this.targetView = targetView;
-            this.position = position;
-            this.id = id;
-        }
 
-        /**
-         * The child view for which the context menu is being displayed. This will be one of the children of this CarouselAdapter.
-         */
-        public View targetView;
-
-        /**
-         * The position in the adapter for which the context menu is being displayed.
-         */
-        public int position;
-
-        /**
-         * The row id of the item for which the context menu is being displayed.
-         */
-        public long id;
-
-    }
-
-    protected class AdapterDataSetObserver
-            extends DataSetObserver {
-
-        private Parcelable mInstanceState = null;
-
-        @Override
-        public void onChanged() {
-            dataChanged = true;
-            oldItemCount = itemCount;
-            itemCount = getAdapter().getCount();
-
-            // Detect the case where a cursor that was previously invalidated has
-            // been repopulated with new data.
-            if (CarouselBaseAdapter.this.getAdapter().hasStableIds() == true && mInstanceState != null && oldItemCount == 0 && itemCount > 0) {
-                CarouselBaseAdapter.this.onRestoreInstanceState(mInstanceState);
-                mInstanceState = null;
-            } else {
-                rememberSyncState();
-            }
-
-            checkFocus();
-            requestLayout();
-        }
-
-        @Override
-        public void onInvalidated() {
-            dataChanged = true;
-
-            if (CarouselBaseAdapter.this.getAdapter().hasStableIds() == true) {
-                // Remember the current state for the case where our hosting activity is being
-                // stopped and later restarted
-                mInstanceState = CarouselBaseAdapter.this.onSaveInstanceState();
-            }
-
-            // Data is invalid so we should reset our state
-            oldItemCount = itemCount;
-            itemCount = 0;
-            selectedPosition = CarouselBaseAdapter.INVALID_POSITION;
-            selectedRowId = CarouselBaseAdapter.INVALID_ROW_ID;
-            nextSelectedPosition = CarouselBaseAdapter.INVALID_POSITION;
-            nextSelectedRowId = CarouselBaseAdapter.INVALID_ROW_ID;
-            needSync = false;
-
-            checkSelectionChanged();
-            checkFocus();
-            requestLayout();
-        }
-
-        public void clearSavedState() {
-            mInstanceState = null;
-        }
-
-    }
-
-    private class SelectionNotifier
-            extends Handler
-            implements Runnable {
-
-        @Override
-        public void run() {
-            if (dataChanged == true) {
-                // Data has changed between when this SelectionNotifier
-                // was posted and now. We need to wait until the CarouselAdapter
-                // has been synched to the new data.
-                post(this);
-            } else {
-                fireOnSelected();
-            }
-        }
-
-    }
-
-    /**
-     * Interface definition for a callback to be invoked when an item in this CarouselAdapter has been clicked.
-     */
-    public static interface OnItemClickListener {
-
-        /**
-         * Callback method to be invoked when an item in this CarouselAdapter has been clicked.
-         * <p/>
-         * Implementers can call getItemAtPosition(position) if they need to access the data associated with the selected item.
-         *
-         * @param parent   The CarouselAdapter where the click happened.
-         * @param view     The view within the CarouselAdapter that was clicked (this will be a view provided by the adapter)
-         * @param position The position of the view in the adapter.
-         * @param id       The row id of the item that was clicked.
-         */
-        public void onItemClick(CarouselBaseAdapter<?> parent, View view, int position, long id);
-
-    }
-
-    /**
-     * Interface definition for a callback to be invoked when an item in this view has been clicked and held.
-     */
-    public static interface OnItemLongClickListener {
-
-        /**
-         * Callback method to be invoked when an item in this view has been clicked and held.
-         * <p/>
-         * Implementers can call getItemAtPosition(position) if they need to access the data associated with the selected item.
-         *
-         * @param parent   The AbsListView where the click happened
-         * @param view     The view within the AbsListView that was clicked
-         * @param position The position of the view in the list
-         * @param id       The row id of the item that was clicked
-         * @return true if the callback consumed the long click, false otherwise
-         */
-        public boolean onItemLongClick(CarouselBaseAdapter<?> parent, View view, int position, long id);
-
-    }
-
-    /**
-     * Interface definition for a callback to be invoked when an item in this view has been selected.
-     */
-    public static interface OnItemSelectedListener {
-
-        /**
-         * Callback method to be invoked when an item in this view has been selected.
-         * <p/>
-         * Implementers can call getItemAtPosition(position) if they need to access the data associated with the selected item.
-         *
-         * @param parent   The CarouselAdapter where the selection happened
-         * @param view     The view within the CarouselAdapter that was clicked
-         * @param position The position of the view in the adapter
-         * @param id       The row id of the item that is selected
-         */
-        public void onItemSelected(CarouselBaseAdapter<?> parent, View view, int position, long id);
-
-        /**
-         * Callback method to be invoked when the selection disappears from this view. The selection can disappear for instance when touch is activated or
-         * when the adapter becomes empty.
-         *
-         * @param parent The CarouselAdapter that now contains no selected item.
-         */
-        public void onNothingSelected(CarouselBaseAdapter<?> parent);
-
-    }
-
+    //region Constants
     /**
      * Represents an invalid position. All valid positions are in the range 0 to 1 less than the number of items in the current adapter.
      */
@@ -218,7 +54,10 @@ public abstract class CarouselBaseAdapter<T extends Adapter>
      * Maximum amount of time to spend in {@link #findSyncPosition()}
      */
     private static final int SYNC_MAX_DURATION_MILLIS = 100;
+    //endregion
 
+
+    //region Instance Fields
     /**
      * The position of the first child displayed
      */
@@ -332,7 +171,14 @@ public abstract class CarouselBaseAdapter<T extends Adapter>
      * When set to true, calls to requestLayout() will not propagate up the parent hierarchy. This is used to layout the children during a layout pass.
      */
     private boolean blockLayoutRequests = false;
+    //endregion
 
+
+    //region Class methods
+    //endregion
+
+
+    //region Constructors / Lifecycle
     public CarouselBaseAdapter(Context context) {
         super(context);
     }
@@ -344,6 +190,10 @@ public abstract class CarouselBaseAdapter<T extends Adapter>
     public CarouselBaseAdapter(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
+    //endregion
+
+
+    //region Custom accessors
 
     /**
      * Register a callback to be invoked when an item in this CarouselAdapter has been clicked.
@@ -359,24 +209,6 @@ public abstract class CarouselBaseAdapter<T extends Adapter>
      */
     public final OnItemClickListener getOnItemClickListener() {
         return onItemClickListener;
-    }
-
-    /**
-     * Call the OnItemClickListener, if it is defined.
-     *
-     * @param view     The view within the CarouselAdapter that was clicked.
-     * @param position The position of the view in the adapter.
-     * @param id       The row id of the item that was clicked.
-     * @return True if there was an assigned OnItemClickListener that was called, false otherwise is returned.
-     */
-    public boolean performItemClick(View view, int position, long id) {
-        if (onItemClickListener != null) {
-            playSoundEffect(SoundEffectConstants.CLICK);
-            onItemClickListener.onItemClick(this, view, position, id);
-            return true;
-        }
-
-        return false;
     }
 
     /**
@@ -429,6 +261,92 @@ public abstract class CarouselBaseAdapter<T extends Adapter>
     }
 
     /**
+     * @return The number of items owned by the Adapter associated with this CarouselAdapter. (This is the number of data items, which may be larger
+     * than the number of visible view.)
+     */
+    public int getCount() {
+        return itemCount;
+    }
+
+    /**
+     * Returns the position within the adapter's data set for the first item displayed on screen.
+     *
+     * @return The position within the adapter's data set
+     */
+    public int getFirstVisiblePosition() {
+        return firstPosition;
+    }
+
+    /**
+     * Sets the view to show if the adapter is empty
+     */
+    public void setEmptyView(View emptyView) {
+        this.emptyView = emptyView;
+        final T adapter = getAdapter();
+        final boolean empty = ((adapter == null) || adapter.isEmpty());
+        updateEmptyStatus(empty);
+    }
+
+    /**
+     * When the current adapter is empty, the CarouselAdapter can display a special view call the empty view. The empty view is used to provide feedback
+     * to the user that no data is available in this CarouselAdapter.
+     *
+     * @return The view to show if the adapter is empty.
+     */
+    public View getEmptyView() {
+        return emptyView;
+    }
+    //endregion
+
+
+    //region Public
+
+    /**
+     * Returns the adapter currently associated with this widget.
+     *
+     * @return The adapter used to provide this view's content.
+     */
+    public abstract T getAdapter();
+
+    /**
+     * Sets the adapter that provides the data and the views to represent the data in this widget.
+     *
+     * @param adapter The adapter to use to create this view's content.
+     */
+    public abstract void setAdapter(T adapter);
+
+    /**
+     * @return The view corresponding to the currently selected item, or null if nothing is selected
+     */
+    public abstract View getSelectedView();
+
+    /**
+     * Sets the currently selected item. To support accessibility subclasses that override this method must invoke the overriden super method first.
+     *
+     * @param position Index (starting at 0) of the data item to be selected.
+     */
+    public abstract void setSelection(int position);
+
+
+    /**
+     * Call the OnItemClickListener, if it is defined.
+     *
+     * @param view     The view within the CarouselAdapter that was clicked.
+     * @param position The position of the view in the adapter.
+     * @param id       The row id of the item that was clicked.
+     * @return True if there was an assigned OnItemClickListener that was called, false otherwise is returned.
+     */
+    public boolean performItemClick(View view, int position, long id) {
+        if (onItemClickListener != null) {
+            playSoundEffect(SoundEffectConstants.CLICK);
+            onItemClickListener.onItemClick(this, view, position, id);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * @return The data corresponding to the currently selected item, or null if there is nothing selected.
      */
     public Object getSelectedItem() {
@@ -439,14 +357,6 @@ public abstract class CarouselBaseAdapter<T extends Adapter>
         } else {
             return null;
         }
-    }
-
-    /**
-     * @return The number of items owned by the Adapter associated with this CarouselAdapter. (This is the number of data items, which may be larger
-     * than the number of visible view.)
-     */
-    public int getCount() {
-        return itemCount;
     }
 
     /**
@@ -484,99 +394,12 @@ public abstract class CarouselBaseAdapter<T extends Adapter>
     }
 
     /**
-     * Returns the position within the adapter's data set for the first item displayed on screen.
-     *
-     * @return The position within the adapter's data set
-     */
-    public int getFirstVisiblePosition() {
-        return firstPosition;
-    }
-
-    /**
      * Returns the position within the adapter's data set for the last item displayed on screen.
      *
      * @return The position within the adapter's data set
      */
     public int getLastVisiblePosition() {
         return firstPosition + getChildCount() - 1;
-    }
-
-    /**
-     * Sets the view to show if the adapter is empty
-     */
-    public void setEmptyView(View emptyView) {
-        this.emptyView = emptyView;
-        final T adapter = getAdapter();
-        final boolean empty = ((adapter == null) || adapter.isEmpty());
-        updateEmptyStatus(empty);
-    }
-
-    /**
-     * When the current adapter is empty, the CarouselAdapter can display a special view call the empty view. The empty view is used to provide feedback
-     * to the user that no data is available in this CarouselAdapter.
-     *
-     * @return The view to show if the adapter is empty.
-     */
-    public View getEmptyView() {
-        return emptyView;
-    }
-
-    /**
-     * Indicates whether this view is in filter mode. Filter mode can for instance be enabled by a user when typing on the keyboard.
-     *
-     * @return True if the view is in filter mode, false otherwise.
-     */
-    private boolean isInFilterMode() {
-        return false;
-    }
-
-    protected void checkFocus() {
-        final T adapter = getAdapter();
-        final boolean empty = adapter == null || adapter.getCount() == 0;
-        final boolean focusable = empty == false || isInFilterMode() == true;
-        // The order in which we set focusable in touch mode/focusable may matter
-        // for the client, see View.setFocusableInTouchMode() comments for more
-        // details
-        super.setFocusableInTouchMode(focusable == true && desiredFocusableInTouchModeState == true);
-        super.setFocusable(focusable == true && desiredFocusableState == true);
-
-        if (emptyView != null) {
-            updateEmptyStatus((adapter == null) || adapter.isEmpty() == true);
-        }
-    }
-
-    /**
-     * Update the status of the list based on the empty parameter. If empty is true and we have an empty view, display it. In all the other cases, make
-     * sure that the listview is VISIBLE and that the empty view is GONE (if it's not null).
-     */
-    @SuppressLint("WrongCall")
-    private void updateEmptyStatus(boolean empty) {
-        if (isInFilterMode() == true) {
-            empty = false;
-        }
-
-        if (empty == true) {
-            if (emptyView != null) {
-                emptyView.setVisibility(View.VISIBLE);
-                setVisibility(View.GONE);
-            } else {
-                // If the caller just removed our empty view, make sure the list view is visible
-                setVisibility(View.VISIBLE);
-            }
-
-            // We are now GONE, so pending layouts will not be dispatched.
-            // Force one here to make sure that the state of the list matches
-            // the state of the adapter.
-            if (dataChanged == true) {
-                this.onLayout(false, getLeft(), getTop(), getRight(), getBottom());
-            }
-        } else {
-            if (emptyView != null) {
-                emptyView.setVisibility(View.GONE);
-            }
-
-            setVisibility(View.VISIBLE);
-        }
     }
 
     /**
@@ -590,49 +413,13 @@ public abstract class CarouselBaseAdapter<T extends Adapter>
         return (adapter == null || position < 0) ? null : adapter.getItem(position);
     }
 
-    protected void selectionChanged() {
-        if (onItemSelectedListener != null) {
-            if (isInLayout == true || blockLayoutRequests == true) {
-                // If we are in a layout traversal, defer notification
-                // by posting. This ensures that the view tree is
-                // in a consistent state and is able to accomodate
-                // new layout or invalidate requests.
-                if (selectionNotifier == null) {
-                    selectionNotifier = new SelectionNotifier();
-                }
-
-                selectionNotifier.post(selectionNotifier);
-            } else {
-                fireOnSelected();
-            }
-        }
-
-        // we fire selection events here not in View
-        if (selectedPosition != ListView.INVALID_POSITION && isShown() == true && isInTouchMode() == false) {
-            sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_SELECTED);
-        }
-    }
-
-    private void fireOnSelected() {
-        if (onItemSelectedListener == null) {
-            return;
-        }
-
-        final int selection = this.getSelectedItemPosition();
-
-        if (selection >= 0) {
-            final View v = getSelectedView();
-            onItemSelectedListener.onItemSelected(this, v, selection, getAdapter().getItemId(selection));
-        } else {
-            onItemSelectedListener.onNothingSelected(this);
-        }
-    }
-
     public long getItemIdAtPosition(int position) {
         final T adapter = getAdapter();
         return (adapter == null || position < 0) ? INVALID_ROW_ID : adapter.getItemId(position);
     }
+    //endregion
 
+    //region Protected, without modifier
     protected void handleDataChanged() {
         final int count = itemCount;
         boolean found = false;
@@ -704,6 +491,132 @@ public abstract class CarouselBaseAdapter<T extends Adapter>
             oldSelectedRowId = selectedRowId;
         }
     }
+
+    protected void checkFocus() {
+        final T adapter = getAdapter();
+        final boolean empty = adapter == null || adapter.getCount() == 0;
+        final boolean focusable = empty == false || isInFilterMode() == true;
+        // The order in which we set focusable in touch mode/focusable may matter
+        // for the client, see View.setFocusableInTouchMode() comments for more
+        // details
+        super.setFocusableInTouchMode(focusable == true && desiredFocusableInTouchModeState == true);
+        super.setFocusable(focusable == true && desiredFocusableState == true);
+
+        if (emptyView != null) {
+            updateEmptyStatus((adapter == null) || adapter.isEmpty() == true);
+        }
+    }
+
+    protected void selectionChanged() {
+        if (onItemSelectedListener != null) {
+            if (isInLayout == true || blockLayoutRequests == true) {
+                // If we are in a layout traversal, defer notification
+                // by posting. This ensures that the view tree is
+                // in a consistent state and is able to accomodate
+                // new layout or invalidate requests.
+                if (selectionNotifier == null) {
+                    selectionNotifier = new SelectionNotifier();
+                }
+
+                selectionNotifier.post(selectionNotifier);
+            } else {
+                fireOnSelected();
+            }
+        }
+
+        // we fire selection events here not in View
+        if (selectedPosition != ListView.INVALID_POSITION && isShown() == true && isInTouchMode() == false) {
+            sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_SELECTED);
+        }
+    }
+
+    /**
+     * Utility to keep selectedPosition and selectedRowId in sync
+     *
+     * @param position Our current position
+     */
+    protected void setSelectedPositionInt(int position) {
+        selectedPosition = position;
+        selectedRowId = getItemIdAtPosition(position);
+    }
+
+    /**
+     * Utility to keep nextSelectedPosition and nextSelectedRowId in sync
+     *
+     * @param position Intended value for selectedPosition the next time we go through layout
+     */
+    protected void setNextSelectedPositionInt(int position) {
+        nextSelectedPosition = position;
+        nextSelectedRowId = getItemIdAtPosition(position);
+
+        // If we are trying to sync to the selection, update that too
+        if (needSync == true && syncMode == CarouselBaseAdapter.SYNC_SELECTED_POSITION && position >= 0) {
+            syncPosition = position;
+            syncRowId = nextSelectedRowId;
+        }
+    }
+    //endregion
+
+    //region Private
+
+    /**
+     * Indicates whether this view is in filter mode. Filter mode can for instance be enabled by a user when typing on the keyboard.
+     *
+     * @return True if the view is in filter mode, false otherwise.
+     */
+    private boolean isInFilterMode() {
+        return false;
+    }
+
+    /**
+     * Update the status of the list based on the empty parameter. If empty is true and we have an empty view, display it. In all the other cases, make
+     * sure that the listview is VISIBLE and that the empty view is GONE (if it's not null).
+     */
+    @SuppressLint("WrongCall")
+    private void updateEmptyStatus(boolean empty) {
+        if (isInFilterMode() == true) {
+            empty = false;
+        }
+
+        if (empty == true) {
+            if (emptyView != null) {
+                emptyView.setVisibility(View.VISIBLE);
+                setVisibility(View.GONE);
+            } else {
+                // If the caller just removed our empty view, make sure the list view is visible
+                setVisibility(View.VISIBLE);
+            }
+
+            // We are now GONE, so pending layouts will not be dispatched.
+            // Force one here to make sure that the state of the list matches
+            // the state of the adapter.
+            if (dataChanged == true) {
+                this.onLayout(false, getLeft(), getTop(), getRight(), getBottom());
+            }
+        } else {
+            if (emptyView != null) {
+                emptyView.setVisibility(View.GONE);
+            }
+
+            setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void fireOnSelected() {
+        if (onItemSelectedListener == null) {
+            return;
+        }
+
+        final int selection = this.getSelectedItemPosition();
+
+        if (selection >= 0) {
+            final View v = getSelectedView();
+            onItemSelectedListener.onItemSelected(this, v, selection, getAdapter().getItemId(selection));
+        } else {
+            onItemSelectedListener.onNothingSelected(this);
+        }
+    }
+
 
     /**
      * Searches the adapter for a position matching syncRowId. The search starts at syncPosition and then alternates between moving up and moving down
@@ -803,32 +716,6 @@ public abstract class CarouselBaseAdapter<T extends Adapter>
     }
 
     /**
-     * Utility to keep selectedPosition and selectedRowId in sync
-     *
-     * @param position Our current position
-     */
-    protected void setSelectedPositionInt(int position) {
-        selectedPosition = position;
-        selectedRowId = getItemIdAtPosition(position);
-    }
-
-    /**
-     * Utility to keep nextSelectedPosition and nextSelectedRowId in sync
-     *
-     * @param position Intended value for selectedPosition the next time we go through layout
-     */
-    protected void setNextSelectedPositionInt(int position) {
-        nextSelectedPosition = position;
-        nextSelectedRowId = getItemIdAtPosition(position);
-
-        // If we are trying to sync to the selection, update that too
-        if (needSync == true && syncMode == CarouselBaseAdapter.SYNC_SELECTED_POSITION && position >= 0) {
-            syncPosition = position;
-            syncRowId = nextSelectedRowId;
-        }
-    }
-
-    /**
      * Remember enough information to restore the screen state when the data has changed.
      */
     private void rememberSyncState() {
@@ -856,198 +743,180 @@ public abstract class CarouselBaseAdapter<T extends Adapter>
             }
         }
     }
+    //endregion
 
-    @Override
-    public void setFocusable(boolean focusable) {
-        final T adapter = getAdapter();
-        final boolean empty = adapter == null || adapter.getCount() == 0;
-        desiredFocusableState = focusable;
 
-        if (focusable == false) {
-            desiredFocusableInTouchModeState = false;
-        }
+    //region Override methods and callbacks
+    //endregion
 
-        super.setFocusable(focusable == true && (empty == false || isInFilterMode() == true));
-    }
-
-    @Override
-    public void setFocusableInTouchMode(boolean focusable) {
-        final T adapter = getAdapter();
-        final boolean empty = adapter == null || adapter.getCount() == 0;
-        desiredFocusableInTouchModeState = focusable;
-
-        if (focusable == true) {
-            desiredFocusableState = true;
-        }
-
-        super.setFocusableInTouchMode(focusable == true && (empty == false || isInFilterMode() == true));
-    }
-
-    @Override
-    public void setOnClickListener(OnClickListener l) {
-        throw new RuntimeException("Don't call setOnClickListener for an CarouselAdapter. " + "You probably want setOnItemClickListener instead");
-    }
+    //region Inner classes or interfaces
 
     /**
-     * Override to prevent freezing of any views created by the adapter.
+     * Extra menu information provided to the
+     * {@link android.view.View.OnCreateContextMenuListener#onCreateContextMenu(ContextMenu, View, ContextMenuInfo) } callback when a context menu is
+     * brought up for this CarouselAdapter.
      */
-    @Override
-    protected void dispatchSaveInstanceState(SparseArray<Parcelable> container) {
-        dispatchFreezeSelfOnly(container);
-    }
+    protected static class AdapterContextMenuInfo
+            implements ContextMenu.ContextMenuInfo {
 
-    /**
-     * Override to prevent thawing of any views created by the adapter.
-     */
-    @Override
-    protected void dispatchRestoreInstanceState(SparseArray<Parcelable> container) {
-        dispatchThawSelfOnly(container);
-    }
-
-    @Override
-    public boolean dispatchPopulateAccessibilityEvent(AccessibilityEvent event) {
-        boolean populated = false;
-
-        // This is an exceptional case which occurs when a window gets the
-        // focus and sends a focus event via its focused child to announce
-        // current focus/selection. CarouselAdapter fires selection but not focus
-        // events so we change the event type here.
-        if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_FOCUSED) {
-            event.setEventType(AccessibilityEvent.TYPE_VIEW_SELECTED);
+        public AdapterContextMenuInfo(View targetView, int position, long id) {
+            this.targetView = targetView;
+            this.position = position;
+            this.id = id;
         }
 
-        // we send selection events only from CarouselAdapter to avoid
-        // generation of such event for each child
-        final View selectedView = getSelectedView();
+        /**
+         * The child view for which the context menu is being displayed. This will be one of the children of this CarouselAdapter.
+         */
+        public View targetView;
 
-        if (selectedView != null) {
-            populated = selectedView.dispatchPopulateAccessibilityEvent(event);
-        }
+        /**
+         * The position in the adapter for which the context menu is being displayed.
+         */
+        public int position;
 
-        if (populated == false) {
-            if (selectedView != null) {
-                event.setEnabled(selectedView.isEnabled());
+        /**
+         * The row id of the item for which the context menu is being displayed.
+         */
+        public long id;
+
+    }
+
+    protected class AdapterDataSetObserver
+            extends DataSetObserver {
+
+        private Parcelable mInstanceState = null;
+
+        @Override
+        public void onChanged() {
+            dataChanged = true;
+            oldItemCount = itemCount;
+            itemCount = getAdapter().getCount();
+
+            // Detect the case where a cursor that was previously invalidated has
+            // been repopulated with new data.
+            if (CarouselBaseAdapter.this.getAdapter().hasStableIds() == true && mInstanceState != null && oldItemCount == 0 && itemCount > 0) {
+                CarouselBaseAdapter.this.onRestoreInstanceState(mInstanceState);
+                mInstanceState = null;
+            } else {
+                rememberSyncState();
             }
 
-            event.setItemCount(getCount());
-            event.setCurrentItemIndex(getSelectedItemPosition());
+            checkFocus();
+            requestLayout();
         }
 
-        return populated;
+        @Override
+        public void onInvalidated() {
+            dataChanged = true;
+
+            if (CarouselBaseAdapter.this.getAdapter().hasStableIds() == true) {
+                // Remember the current state for the case where our hosting activity is being
+                // stopped and later restarted
+                mInstanceState = CarouselBaseAdapter.this.onSaveInstanceState();
+            }
+
+            // Data is invalid so we should reset our state
+            oldItemCount = itemCount;
+            itemCount = 0;
+            selectedPosition = CarouselBaseAdapter.INVALID_POSITION;
+            selectedRowId = CarouselBaseAdapter.INVALID_ROW_ID;
+            nextSelectedPosition = CarouselBaseAdapter.INVALID_POSITION;
+            nextSelectedRowId = CarouselBaseAdapter.INVALID_ROW_ID;
+            needSync = false;
+
+            checkSelectionChanged();
+            checkFocus();
+            requestLayout();
+        }
+
+        public void clearSavedState() {
+            mInstanceState = null;
+        }
+
     }
 
-    @Override
-    protected boolean canAnimate() {
-        return super.canAnimate() == true && itemCount > 0;
-    }
+    private class SelectionNotifier
+            extends Handler
+            implements Runnable {
 
-    /**
-     * This method is not supported and throws an UnsupportedOperationException when called.
-     *
-     * @param child Ignored.
-     * @throws UnsupportedOperationException Every time this method is invoked.
-     */
-    @Override
-    public void addView(View child) {
-        throw new UnsupportedOperationException("addView(View) is not supported in CarouselAdapter");
-    }
-
-    /**
-     * This method is not supported and throws an UnsupportedOperationException when called.
-     *
-     * @param child Ignored.
-     * @param index Ignored.
-     * @throws UnsupportedOperationException Every time this method is invoked.
-     */
-    @Override
-    public void addView(View child, int index) {
-        throw new UnsupportedOperationException("addView(View, int) is not supported in CarouselAdapter");
-    }
-
-    /**
-     * This method is not supported and throws an UnsupportedOperationException when called.
-     *
-     * @param child  Ignored.
-     * @param params Ignored.
-     * @throws UnsupportedOperationException Every time this method is invoked.
-     */
-    @Override
-    public void addView(View child, LayoutParams params) {
-        throw new UnsupportedOperationException("addView(View, LayoutParams) " + "is not supported in CarouselAdapter");
-    }
-
-    /**
-     * This method is not supported and throws an UnsupportedOperationException when called.
-     *
-     * @param child  Ignored.
-     * @param index  Ignored.
-     * @param params Ignored.
-     * @throws UnsupportedOperationException Every time this method is invoked.
-     */
-    @Override
-    public void addView(View child, int index, LayoutParams params) {
-        throw new UnsupportedOperationException("addView(View, int, LayoutParams) " + "is not supported in CarouselAdapter");
+        @Override
+        public void run() {
+            if (dataChanged == true) {
+                // Data has changed between when this SelectionNotifier
+                // was posted and now. We need to wait until the CarouselAdapter
+                // has been synched to the new data.
+                post(this);
+            } else {
+                fireOnSelected();
+            }
+        }
     }
 
     /**
-     * This method is not supported and throws an UnsupportedOperationException when called.
-     *
-     * @param child Ignored.
-     * @throws UnsupportedOperationException Every time this method is invoked.
+     * Interface definition for a callback to be invoked when an item in this CarouselAdapter has been clicked.
      */
-    @Override
-    public void removeView(View child) {
-        throw new UnsupportedOperationException("removeView(View) is not supported in CarouselAdapter");
+    public interface OnItemClickListener {
+
+        /**
+         * Callback method to be invoked when an item in this CarouselAdapter has been clicked.
+         * <p/>
+         * Implementers can call getItemAtPosition(position) if they need to access the data associated with the selected item.
+         *
+         * @param parent   The CarouselAdapter where the click happened.
+         * @param view     The view within the CarouselAdapter that was clicked (this will be a view provided by the adapter)
+         * @param position The position of the view in the adapter.
+         * @param id       The row id of the item that was clicked.
+         */
+        void onItemClick(CarouselBaseAdapter<?> parent, View view, int position, long id);
+
     }
 
     /**
-     * This method is not supported and throws an UnsupportedOperationException when called.
-     *
-     * @param index Ignored.
-     * @throws UnsupportedOperationException Every time this method is invoked.
+     * Interface definition for a callback to be invoked when an item in this view has been clicked and held.
      */
-    @Override
-    public void removeViewAt(int index) {
-        throw new UnsupportedOperationException("removeViewAt(int) is not supported in CarouselAdapter");
+    public interface OnItemLongClickListener {
+
+        /**
+         * Callback method to be invoked when an item in this view has been clicked and held.
+         * <p/>
+         * Implementers can call getItemAtPosition(position) if they need to access the data associated with the selected item.
+         *
+         * @param parent   The AbsListView where the click happened
+         * @param view     The view within the AbsListView that was clicked
+         * @param position The position of the view in the list
+         * @param id       The row id of the item that was clicked
+         * @return true if the callback consumed the long click, false otherwise
+         */
+        boolean onItemLongClick(CarouselBaseAdapter<?> parent, View view, int position, long id);
+
     }
 
     /**
-     * This method is not supported and throws an UnsupportedOperationException when called.
-     *
-     * @throws UnsupportedOperationException Every time this method is invoked.
+     * Interface definition for a callback to be invoked when an item in this view has been selected.
      */
-    @Override
-    public void removeAllViews() {
-        throw new UnsupportedOperationException("removeAllViews() is not supported in CarouselAdapter");
+    public interface OnItemSelectedListener {
+
+        /**
+         * Callback method to be invoked when an item in this view has been selected.
+         * <p/>
+         * Implementers can call getItemAtPosition(position) if they need to access the data associated with the selected item.
+         *
+         * @param parent   The CarouselAdapter where the selection happened
+         * @param view     The view within the CarouselAdapter that was clicked
+         * @param position The position of the view in the adapter
+         * @param id       The row id of the item that is selected
+         */
+        void onItemSelected(CarouselBaseAdapter<?> parent, View view, int position, long id);
+
+        /**
+         * Callback method to be invoked when the selection disappears from this view. The selection can disappear for instance when touch is activated or
+         * when the adapter becomes empty.
+         *
+         * @param parent The CarouselAdapter that now contains no selected item.
+         */
+        void onNothingSelected(CarouselBaseAdapter<?> parent);
+
     }
-
-    @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-    }
-
-    /**
-     * Returns the adapter currently associated with this widget.
-     *
-     * @return The adapter used to provide this view's content.
-     */
-    public abstract T getAdapter();
-
-    /**
-     * Sets the adapter that provides the data and the views to represent the data in this widget.
-     *
-     * @param adapter The adapter to use to create this view's content.
-     */
-    public abstract void setAdapter(T adapter);
-
-    /**
-     * @return The view corresponding to the currently selected item, or null if nothing is selected
-     */
-    public abstract View getSelectedView();
-
-    /**
-     * Sets the currently selected item. To support accessibility subclasses that override this method must invoke the overriden super method first.
-     *
-     * @param position Index (starting at 0) of the data item to be selected.
-     */
-    public abstract void setSelection(int position);
+    //endregion
 }

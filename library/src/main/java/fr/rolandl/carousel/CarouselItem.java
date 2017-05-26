@@ -15,20 +15,31 @@ public abstract class CarouselItem<T>
         extends FrameLayout
         implements Comparable<CarouselItem<?>> {
 
+    //region Inner enums
+    //endregion
+
+
+    //region Constants
+    //endregion
+
+
+    //region Instance Fields
     private int index;
-
     private float currentAngle;
-
     private float itemX;
-
     private float itemY;
-
     private float itemZ;
-
     private boolean drawn;
 
     private Matrix matrix;
+    //endregion
 
+
+    //region Class methods
+    //endregion
+
+
+    //region Constructors / Lifecycle
     public CarouselItem(Context context, int layoutId) {
         super(context);
 
@@ -40,7 +51,10 @@ public abstract class CarouselItem<T>
 
         extractView(view);
     }
+    //endregion
 
+
+    //region Custom accessors
     public void setIndex(int index) {
         this.index = index;
     }
@@ -96,14 +110,33 @@ public abstract class CarouselItem<T>
     void setCIMatrix(Matrix mMatrix) {
         this.matrix = mMatrix;
     }
+    //endregion
 
-    @Override
-    public int compareTo(CarouselItem<?> another) {
-        return (int) (another.itemZ - this.itemZ);
-    }
 
+    //region Public
     public abstract void extractView(View view);
 
     public abstract void update(T arg0);
 
+    public abstract int getPreferredWidth();
+
+    public abstract int getPreferredHeight();
+    //endregion
+
+    //region Protected, without modifier
+    //endregion
+
+    //region Private
+    //endregion
+
+
+    //region Override methods and callbacks
+    @Override
+    public int compareTo(CarouselItem<?> another) {
+        return (int) (another.itemZ - this.itemZ);
+    }
+    //endregion
+
+    //region Inner classes or interfaces
+    //endregion
 }

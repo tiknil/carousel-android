@@ -18,9 +18,13 @@ import java.util.List;
 public abstract class CarouselAdapter<T>
         extends BaseAdapter {
 
+
+    //region Instance Fields
     private final List<T> modelItems = new ArrayList<>();
     private final List<CarouselItem<T>> items = new ArrayList<>();
+    //endregion
 
+    //region Constructors / Lifecycle
     public CarouselAdapter(Context context, List<T> items) {
         modelItems.addAll(items);
         for (int i = 0; i < items.size(); i++) {
@@ -42,7 +46,25 @@ public abstract class CarouselAdapter<T>
             }
         });
     }
+    //endregion
 
+    //region Public
+    public abstract CarouselItem<T> getCarouselItem(Context context);
+    //endregion
+
+    //region Protected, without modifier
+    //endregion
+
+    //region Private
+    private void update() {
+        for (int i = 0; i < items.size(); i++) {
+            items.get(i).update(modelItems.get(i));
+        }
+    }
+    //endregion
+
+
+    //region Override methods and callbacks
     @Override
     public int getCount() {
         if (items == null) {
@@ -66,13 +88,5 @@ public abstract class CarouselAdapter<T>
     public View getView(int position, View convertView, ViewGroup parent) {
         return items.get(position);
     }
-
-    public abstract CarouselItem<T> getCarouselItem(Context context);
-
-    private void update() {
-        for (int i = 0; i < items.size(); i++) {
-            items.get(i).update(modelItems.get(i));
-        }
-    }
-
+    //endregion
 }

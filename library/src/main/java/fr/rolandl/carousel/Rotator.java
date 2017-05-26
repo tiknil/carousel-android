@@ -13,32 +13,28 @@ import android.view.animation.AnimationUtils;
 //Inspired by http://www.codeproject.com/Articles/146145/Android-D-Carousel
 public final class Rotator {
 
+    //region Constants
     private static final int DEFAULT_DURATION = 250;
-
     private static final float COEFF_VELOCOTY = 0.05f;
-
     private static final int SCROLL_MODE = 0;
-
     private static final int FLING_MODE = 1;
-
     private final float mDeceleration = 240.0f;
+    //endregion
 
+
+    //region Instance Fields
     private int mode;
-
     private float startAngle;
-
     private float currAngle;
-
     private long startTime;
-
     private long duration;
-
     private float deltaAngle;
-
     private boolean finished;
-
     private float velocity;
+    //endregion
 
+
+    //region Constructors / Lifecycle
 
     /**
      * Create a Scroller with the specified interpolator. If the interpolator is null, the default (viscous) interpolator will be used.
@@ -46,6 +42,10 @@ public final class Rotator {
     public Rotator() {
         finished = true;
     }
+    //endregion
+
+
+    //region Custom accessors
 
     /**
      * Returns whether the scroller has finished scrolling.
@@ -84,20 +84,25 @@ public final class Rotator {
     }
 
     /**
-     * @return The original velocity less the deceleration. Result may be negative.
-     * @hide Returns the current velocity.
-     */
-    public float getCurrVelocity() {
-        return Rotator.COEFF_VELOCOTY * velocity - mDeceleration * timePassed() /* / 2000.0f */;
-    }
-
-    /**
      * Returns the start X offset in the scroll.
      *
      * @return The start X offset as an absolute distance from the origin.
      */
     public final float getStartAngle() {
         return startAngle;
+    }
+
+    //endregion
+
+
+    //region Public
+
+    /**
+     * @return The original velocity less the deceleration. Result may be negative.
+     * @hide Returns the current velocity.
+     */
+    public float getCurrVelocity() {
+        return Rotator.COEFF_VELOCOTY * velocity - mDeceleration * timePassed() /* / 2000.0f */;
     }
 
     /**
@@ -129,7 +134,7 @@ public final class Rotator {
      * location.
      */
     public boolean computeAngleOffset() {
-        if (finished == true) {
+        if (finished) {
             return false;
         }
 
@@ -156,13 +161,13 @@ public final class Rotator {
                     currAngle = startAngle - Math.signum(velocity) * Math.round(distance);
                     break;
             }
-
             return true;
         } else {
             finished = true;
             return false;
         }
     }
+
 
     public void startRotate(float startAngle, float dAngle, int duration) {
         mode = Rotator.SCROLL_MODE;
@@ -183,12 +188,13 @@ public final class Rotator {
      * @param velocityAngle Initial velocity of the fling (X) measured in pixels per second.
      */
     public void fling(float velocityAngle) {
-        final float velocity = velocityAngle;
         mode = Rotator.FLING_MODE;
         finished = false;
-        this.velocity = velocity;
+        this.velocity = velocityAngle;
         duration = (int) (1000.0f * Math.sqrt(2.0f * Rotator.COEFF_VELOCOTY * Math.abs(velocity) / mDeceleration));
         startTime = AnimationUtils.currentAnimationTimeMillis();
     }
+
+    //endregion
 
 }
