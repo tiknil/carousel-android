@@ -6,7 +6,6 @@ import android.graphics.Camera;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.GestureDetector;
 import android.view.Gravity;
@@ -43,10 +42,6 @@ public final class Carousel
      */
     private static final int SCROLL_TO_FLING_UNCERTAINTY_TIMEOUT = 250;
 
-    /**
-     * The axe angle
-     */
-    private static final float THETA = (float) (15.0f * (Math.PI / 180.0));
     //endregion
 
 
@@ -138,6 +133,13 @@ public final class Carousel
      * If true, do not callback to item selected listener.
      */
     private boolean suppressSelectionChanged;
+
+    /**
+     * The axe angle
+     */
+    private float theta = 15.0f;
+
+    private int yOffset = 0;
     //endregion
 
 
@@ -172,6 +174,9 @@ public final class Carousel
         // Retrieve settings
         TypedArray arr = getContext().obtainStyledAttributes(attrs, R.styleable.Carousel);
         animationDuration = arr.getInteger(R.styleable.Carousel_android_animationDuration, 400);
+        gravity = arr.getInteger(R.styleable.Carousel_android_gravity, Gravity.TOP);
+        theta = arr.getFloat(R.styleable.Carousel_theta, 15.0f);
+        yOffset = arr.getInteger(R.styleable.Carousel_yOffset, 0);
 
         arr.recycle();
     }
@@ -280,13 +285,13 @@ public final class Carousel
     private void calculate3DPosition(CarouselItem<?> child, int diameter, float angleOffset) {
         angleOffset = angleOffset * (float) (Math.PI / 180.0f);
 
-        final float x = (float) (-(diameter / 2 * Math.sin(angleOffset)) + diameter / 2 - child.getWidth() / 2);
-        final float z = (float) (diameter / 2 * (1.0f - Math.cos(angleOffset)));
-        final float y = (float) (-getHeight() / 2 + z * Math.sin(Carousel.THETA));
+        final float x = -(diameter / 2 * MathUtils.sinF(angleOffset)) + diameter / 2 - child.getWidth() / 2;
+        final float z = diameter / 2 * (1.0f - MathUtils.cosF(angleOffset));
+        final float y = -getHeight() / 2 + z * MathUtils.sinF((float) (theta * (Math.PI / 180.0)));
 
         child.setItemX(x);
         child.setItemZ(z);
-        child.setItemY(y);
+        child.setItemY(y + yOffset);
     }
 
     /**
@@ -550,20 +555,12 @@ public final class Carousel
         w = child.getPreferredWidth();
         h = child.getPreferredHeight();
 
-        Log.d("carousel", "child (" + w + "," + h + ")");
-
         int pH, pW;
         if (isInLayout) {
             d = getMeasuredWidth();
-            pH = getMeasuredHeight();
-            pW = getMeasuredWidth();
         } else {
             d = getWidth();
-            pH = getHeight();
-            pW = getWidth();
         }
-
-        Log.d("carousel", "parent (" + pW + "," + pH + ")");
 
         child.setCurrentAngle(angleOffset);
 

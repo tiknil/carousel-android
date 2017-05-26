@@ -4,6 +4,9 @@
     <declare-styleable name="Carousel">
         <attr name="android:gravity" />
         <attr name="android:animationDuration" />
+
+        <attr name="theta" format="float" />
+        <attr name="yOffset" format="integer" />
     </declare-styleable>
 
 </resources>
