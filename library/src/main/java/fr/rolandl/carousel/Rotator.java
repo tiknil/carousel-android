@@ -147,7 +147,6 @@ public final class Rotator {
                     final float sc = (float) timePassed / duration;
                     currAngle = startAngle + Math.round(deltaAngle * sc);
                     break;
-
                 case Rotator.FLING_MODE:
                     final float timePassedSeconds = timePassed / 1000.0f;
                     float distance;

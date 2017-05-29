@@ -528,6 +528,10 @@ public final class Carousel
             angle = -(360.0f - angle);
         }
 
+        if (angle >= 359 || angle <= 1) {
+            angle = 0;
+        }
+
         // Start rotation if needed
         if (angle != 0.0f) {
             flingRunnable.startUsingDistance(-angle);
