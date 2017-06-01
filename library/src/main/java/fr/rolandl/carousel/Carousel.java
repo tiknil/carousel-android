@@ -528,7 +528,7 @@ public final class Carousel
             angle = -(360.0f - angle);
         }
 
-        if (angle >= 359 || angle <= 1) {
+        if (angle >= 340 || angle <= 20) {
             angle = 0;
         }
 
