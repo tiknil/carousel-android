@@ -614,6 +614,12 @@ public final class Carousel
 
 
     //region Override methods and callbacks
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        return !isEnabled();
+    }
+
     @Override
     public boolean onDown(MotionEvent e) {
         // Kill any existing fling/scroll
