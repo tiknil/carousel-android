@@ -617,7 +617,11 @@ public final class Carousel
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        return !isEnabled();
+        boolean result = true;
+        if (isEnabled()) {
+            result = super.dispatchTouchEvent(ev);
+        }
+        return result;
     }
 
     @Override
